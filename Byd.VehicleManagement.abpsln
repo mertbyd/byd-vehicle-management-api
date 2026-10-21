@@ -1,0 +1,7 @@
+{
+  "modules": {
+    "Byd.VehicleManagement": {
+      "path": "Byd.VehicleManagement.abpmdl"
+    }
+  }
+}
