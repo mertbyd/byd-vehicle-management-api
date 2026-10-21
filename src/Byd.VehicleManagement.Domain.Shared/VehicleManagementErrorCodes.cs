@@ -8,4 +8,6 @@ public static class VehicleManagementErrorCodes
     public const string LookupGroup = RootNamespace + ":01";
     public const string VehicleModelGroup = RootNamespace + ":02";
     public const string VehicleTypeGroup = RootNamespace + ":03";
+    public const string VehicleGroup = RootNamespace + ":04";
+    public const string VehicleEquipmentGroup = RootNamespace + ":05";
 }

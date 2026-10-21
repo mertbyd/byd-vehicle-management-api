@@ -10,10 +10,12 @@ public static class VehicleLookupRoutes
     public const string VehicleStatuses = "vehicle-statuses";
     public const string WheelchairAccessibles = "wheelchair-accessibles";
     public const string EquipmentTypes = "equipment-types";
+    public const string RegistrationSources = "registration-sources";
     public const string ById = "{id:int}";
     public const string TransportModesPath = Root + "/" + TransportModes;
     public const string FuelTypesPath = Root + "/" + FuelTypes;
     public const string VehicleStatusesPath = Root + "/" + VehicleStatuses;
     public const string WheelchairAccessiblesPath = Root + "/" + WheelchairAccessibles;
     public const string EquipmentTypesPath = Root + "/" + EquipmentTypes;
+    public const string RegistrationSourcesPath = Root + "/" + RegistrationSources;
 }

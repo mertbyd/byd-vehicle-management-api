@@ -9,6 +9,7 @@ using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore.Sqlite;
 using Volo.Abp.Modularity;
+using Volo.Abp.Settings;
 using Volo.Abp.Uow;
 
 namespace Byd.VehicleManagement.EntityFrameworkCore;
@@ -31,6 +32,8 @@ public class VehicleManagementEntityFrameworkCoreTestModule : AbpModule
         // Testler tek SQLite baglantisinda calisir; tenant degistiren testlerde baglanti dizesi icin tenant deposu
         // (auth'un PostgreSQL tablolari) aranmaz.
         context.Services.Replace(ServiceDescriptor.Transient<IConnectionStringResolver, DefaultConnectionStringResolver>());
+        // Ayar tablolari da SQLite'ta yoktur; ayarlar tanimdaki varsayilan degerleriyle okunur.
+        context.Services.Replace(ServiceDescriptor.Singleton<ISettingStore, NullSettingStore>());
 
         var sqliteConnection = CreateDatabaseAndGetConnection();
 

@@ -36,7 +36,7 @@ public class VehicleLookupTests
     }
 
     [Fact]
-    public async Task Migrations_CreateFiveEmptyLookupTablesWithUniqueCodes()
+    public async Task Migrations_CreateSixEmptyLookupTablesWithUniqueCodes()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");
         await connection.OpenAsync();
@@ -50,9 +50,10 @@ public class VehicleLookupTests
         Assert.False(await context.VehicleStatuses.AnyAsync());
         Assert.False(await context.WheelchairAccessibles.AnyAsync());
         Assert.False(await context.EquipmentTypes.AnyAsync());
+        Assert.False(await context.RegistrationSources.AnyAsync());
         var entities = context.Model.GetEntityTypes()
             .Where(entity => typeof(VehicleLookup).IsAssignableFrom(entity.ClrType)).ToList();
-        Assert.Equal(5, entities.Count);
+        Assert.Equal(6, entities.Count);
         Assert.All(entities, entity =>
         {
             Assert.Equal("vehicle_management", entity.GetSchema());
