@@ -2,6 +2,15 @@
   "culture": "tr",
   "texts": {
     "MyAccount":  "Hesabım",
-    "SamplePageMessage": "VehicleManagement modulünden örnek bir sayfa"
+    "SamplePageMessage": "VehicleManagement modulünden örnek bir sayfa",
+    "Permission:VehicleManagement": "Araç yönetimi",
+    "Permission:Lookups": "Araç listeleri",
+    "Permission:Lookups.View": "Araç listelerini görüntüle",
+    "Permission:Lookups.Manage": "Araç listelerini yönet",
+    "VehicleManagement:010001": "Lookup adı zorunludur.",
+    "VehicleManagement:010002": "Lookup kodu sıfır veya daha büyük olmalıdır.",
+    "VehicleManagement:010003": "Lookup kodu zaten kayıtlı.",
+    "ActivityLogs:LookupUpdated": "Araç lookup kaydı güncellendi.",
+    "ActivityLogs:LookupDeleted": "Araç lookup kaydı silindi."
   }
 }
