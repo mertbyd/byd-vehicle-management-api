@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Volo.Abp.AspNetCore.Mvc" Version="10.3.0" />
+    <PackageReference Include="SystemStandards.Core" Version="2.0.0" />
     <ProjectReference Include="..\Byd.VehicleManagement.Application.Contracts\Byd.VehicleManagement.Application.Contracts.csproj" />
   </ItemGroup>
 

@@ -2,6 +2,15 @@
   "culture": "en",
   "texts": {
     "MyAccount":  "My account",
-    "SamplePageMessage": "A sample page for the VehicleManagement module"
+    "SamplePageMessage": "A sample page for the VehicleManagement module",
+    "Permission:VehicleManagement": "Vehicle management",
+    "Permission:Lookups": "Vehicle lookups",
+    "Permission:Lookups.View": "View vehicle lookups",
+    "Permission:Lookups.Manage": "Manage vehicle lookups",
+    "VehicleManagement:010001": "Lookup name is required.",
+    "VehicleManagement:010002": "Lookup code must be zero or greater.",
+    "VehicleManagement:010003": "Lookup code already exists.",
+    "ActivityLogs:LookupUpdated": "Vehicle lookup updated.",
+    "ActivityLogs:LookupDeleted": "Vehicle lookup deleted."
   }
 }

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
+using Byd.CoreExtensions.Options;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore.Sqlite;
 using Volo.Abp.Modularity;
@@ -18,6 +19,11 @@ public class VehicleManagementEntityFrameworkCoreTestModule : AbpModule
 {
     public override void ConfigureServices(ServiceConfigurationContext context)
     {
+        Configure<CoreExtensionsModuleOptions>(options =>
+        {
+            options.ModuleName = "VehicleManagement";
+            options.EnvironmentName = "Test";
+        });
         context.Services.AddAlwaysDisableUnitOfWorkTransaction();
 
         var sqliteConnection = CreateDatabaseAndGetConnection();

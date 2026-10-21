@@ -13,6 +13,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="10.0.2" />
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.12" />
     <ProjectReference Include="..\..\src\Byd.VehicleManagement.EntityFrameworkCore\Byd.VehicleManagement.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\src\Byd.VehicleManagement.HttpApi\Byd.VehicleManagement.HttpApi.csproj" />
     <ProjectReference Include="..\Byd.VehicleManagement.Application.Tests\Byd.VehicleManagement.Application.Tests.csproj" />
     <PackageReference Include="Volo.Abp.EntityFrameworkCore.Sqlite" Version="10.3.0" />
 
