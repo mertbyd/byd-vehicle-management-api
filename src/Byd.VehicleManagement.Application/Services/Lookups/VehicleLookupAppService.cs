@@ -5,24 +5,23 @@ using System.Threading.Tasks;
 using FluentValidation;
 using Byd.VehicleManagement.Dtos.Lookups;
 using Byd.VehicleManagement.Entities.Lookups;
+using Byd.VehicleManagement.Interfaces.Lookups;
 using Byd.VehicleManagement.Managers.Lookups;
 using Byd.VehicleManagement.Mappers.Lookups;
-using Volo.Abp.Domain.Repositories;
 
 namespace Byd.VehicleManagement.Services.Lookups;
 
 // islevi: Arac lookup satirlarinin olustur, oku, listele, guncelle ve sil akisini tek yerde yurutur.
 // sistemdeki gorevi: Tipli repository, Manager ve Mapperly baglarini merkezde cozerek yaprak servisleri bos tutar.
-public abstract class VehicleLookupAppService<TEntity, TManager, TRepository, TMapper>
+public abstract class VehicleLookupAppService<TEntity, TManager, TMapper>
     : VehicleManagementAppService, IVehicleLookupCrudAppService
     where TEntity : VehicleLookup
     where TManager : BaseLookupManager<TEntity>
-    where TRepository : IRepository<TEntity, int>
     where TMapper : IVehicleLookupCrudMapper<TEntity>, new()
 {
     private static readonly TMapper Mapper = new();
     private TManager Manager => LazyGetRequiredService<TManager>();
-    private TRepository Repository => LazyGetRequiredService<TRepository>();
+    private IVehicleLookupRepository<TEntity> Repository => LazyGetRequiredService<IVehicleLookupRepository<TEntity>>();
 
     // Girdiyi dogrular, yeni satiri kurar ve kalici hale getirir.
     public virtual async Task<VehicleLookupDto> CreateAsync(
@@ -37,7 +36,7 @@ public abstract class VehicleLookupAppService<TEntity, TManager, TRepository, TM
 
     // Kimligi verilen satiri getirir.
     public virtual async Task<VehicleLookupDto> GetAsync(int id, CancellationToken cancellationToken = default)
-        => Mapper.Map(await Repository.GetAsync(id, cancellationToken: cancellationToken));
+        => Mapper.Map((await Manager.TryGetByIdAsync(id, cancellationToken: cancellationToken))!);
 
     // Turun tum satirlarini koda gore sirali getirir.
     public virtual async Task<List<VehicleLookupDto>> GetListAsync(CancellationToken cancellationToken = default)
@@ -52,13 +51,17 @@ public abstract class VehicleLookupAppService<TEntity, TManager, TRepository, TM
     {
         await LazyGetRequiredService<IValidator<UpdateVehicleLookupDto>>()
             .ValidateAndThrowAsync(input, cancellationToken);
-        var entity = await Repository.GetAsync(id, cancellationToken: cancellationToken);
+        var entity = (await Manager.TryGetByIdAsync(id, cancellationToken: cancellationToken))!;
         await Manager.UpdateAsync(entity, Mapper.Map(input), cancellationToken);
         await Repository.UpdateAsync(entity, autoSave: true, cancellationToken: cancellationToken);
         return Mapper.Map(entity);
     }
 
-    // Kimligi verilen satiri kalici olarak siler.
-    public virtual Task DeleteAsync(int id, CancellationToken cancellationToken = default)
-        => Repository.DeleteAsync(id, autoSave: true, cancellationToken: cancellationToken);
+    // Hicbir kayit kullanmiyorsa satiri kalici olarak siler.
+    public virtual async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var entity = (await Manager.TryGetByIdAsync(id, cancellationToken: cancellationToken))!;
+        await Manager.EnsureCanDeleteAsync(entity, cancellationToken);
+        await Repository.DeleteAsync(entity, autoSave: true, cancellationToken: cancellationToken);
+    }
 }

@@ -14,6 +14,8 @@ public partial class VehicleManagementPermissionDefinitionProvider : PermissionD
             VehicleManagementPermissions.GroupName,
             L(VehicleManagementLocalizationKeys.Permissions.Group));
         AddLookupPermissions(group);
+        AddVehicleModelPermissions(group);
+        AddVehicleTypePermissions(group);
     }
 
     private static LocalizableString L(string name)

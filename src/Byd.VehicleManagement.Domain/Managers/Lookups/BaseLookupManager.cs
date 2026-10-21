@@ -2,20 +2,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Byd.CoreExtensions.ExceptionCodes;
+using Byd.CoreExtensions.Interfaces;
+using Byd.CoreExtensions.Managers;
 using Byd.VehicleManagement.Entities.Lookups;
 using Byd.VehicleManagement.ExceptionCodes;
+using Byd.VehicleManagement.Interfaces.Lookups;
 using Byd.VehicleManagement.Models.Lookups;
 using Volo.Abp;
-using Volo.Abp.Domain.Repositories;
-using Volo.Abp.Domain.Services;
+using Volo.Abp.Data;
+using Volo.Abp.MultiTenancy;
 
 namespace Byd.VehicleManagement.Managers.Lookups;
 
-// islevi: Lookup kodunun tekilligini, adin normalizasyonunu ve eksik varsayilan satirlarin belirlenmesini yonetir.
-// sistemdeki gorevi: Bes lookup turunun ortak yazma ve seed kurallarini tek yerde uygular.
-public abstract class BaseLookupManager<TEntity>(IRepository<TEntity, int> repository) : DomainService
+// islevi: Lookup kodunun tekilligini, adin normalizasyonunu, eksik varsayilan satirlarin belirlenmesini ve kullanilan
+// satirin silinmemesini yonetir.
+// sistemdeki gorevi: Bes lookup turunun ortak yazma, seed ve silme kurallarini tek yerde uygular.
+public abstract class BaseLookupManager<TEntity>(IVehicleLookupRepository<TEntity> repository)
+    : BaseManager<TEntity, int>(repository)
     where TEntity : VehicleLookup
 {
+    private IDataFilter DataFilter => LazyServiceProvider.LazyGetRequiredService<IDataFilter>();
+
     // Alt sinifin Domain.Shared icindeki varsayilan satirlarini dondurur.
     protected abstract IReadOnlyList<(int Id, string Name, int Code)> GetDefinitions();
 
@@ -43,18 +51,30 @@ public abstract class BaseLookupManager<TEntity>(IRepository<TEntity, int> repos
     // degistirdigi satirlara dokunmaz.
     public virtual async Task<List<TEntity>> CreateMissingAsync(CancellationToken cancellationToken = default)
     {
-        var existing = await repository.GetListAsync(cancellationToken: cancellationToken);
+        var existing = await Repository.GetListAsync(cancellationToken: cancellationToken);
         var ids = existing.Select(value => value.Id).ToHashSet();
         var codes = existing.Select(value => value.Code).ToHashSet();
         return GetDefinitions().Where(value => !ids.Contains(value.Id) && !codes.Contains(value.Code))
             .Select(value => CreateEntity(value.Id, value.Name, value.Code)).ToList();
     }
 
+    // Satiri herhangi bir tenant veya organizasyondaki kayit kullaniyorsa silmeyi engeller. Lookup host kapsaminda
+    // oldugu icin kontrol boyunca tenant ve organizasyon filtreleri kapatilir.
+    public virtual async Task EnsureCanDeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
+    {
+        using (DataFilter.Disable<IMultiTenant>())
+        using (DataFilter.Disable<IMultiOrganization>())
+        {
+            if (await Repository.IsDataUsedAsync(entity, ignoredEntityTypes: null, cancellationToken))
+                throw new BusinessException(GeneralExceptionCodes.RelationalDataDelete);
+        }
+    }
+
     // Ayni kodun turde baska bir satirda bulunmasini kodlu hatayla engeller.
     private async Task EnsureCodeAvailableAsync(int code, int currentId, CancellationToken cancellationToken = default)
     {
-        if (await repository.AnyAsync(
-                value => value.Code == code && value.Id != currentId, cancellationToken))
+        if (await Repository.FindAsync(
+                value => value.Code == code && value.Id != currentId, cancellationToken: cancellationToken) is not null)
             throw new BusinessException(VehicleLookupExceptionCodes.CodeAlreadyExists);
     }
 }

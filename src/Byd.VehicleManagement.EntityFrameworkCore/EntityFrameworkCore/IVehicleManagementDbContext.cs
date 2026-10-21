@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Byd.VehicleManagement.Entities.Lookups;
+using Byd.VehicleManagement.Entities.VehicleModels;
+using Byd.VehicleManagement.Entities.VehicleTypes;
 using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -15,4 +17,6 @@ public interface IVehicleManagementDbContext : IEfCoreDbContext
     DbSet<VehicleStatus> VehicleStatuses { get; }
     DbSet<WheelchairAccessible> WheelchairAccessibles { get; }
     DbSet<EquipmentType> EquipmentTypes { get; }
+    DbSet<VehicleModel> VehicleModels { get; }
+    DbSet<VehicleType> VehicleTypes { get; }
 }

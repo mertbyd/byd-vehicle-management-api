@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using Byd.VehicleManagement.Consts;
 using Byd.VehicleManagement.Entities.Lookups;
-using Volo.Abp.Domain.Repositories;
+using Byd.VehicleManagement.Interfaces.Lookups;
 
 namespace Byd.VehicleManagement.Managers.Lookups;
 
 // islevi: FuelType satirlarinin olusturulmasini ve varsayilan satirlarini ortak lookup kurallarina baglar.
 // sistemdeki gorevi: FuelType icin tipli entity kurulumunu ve seed tanimlarini saglar.
-public class FuelTypeManager(IRepository<FuelType, int> repository)
+public class FuelTypeManager(IVehicleLookupRepository<FuelType> repository)
     : BaseLookupManager<FuelType>(repository)
 {
     // Varsayilan yakit turu satirlarini Domain.Shared uzerinden alir.

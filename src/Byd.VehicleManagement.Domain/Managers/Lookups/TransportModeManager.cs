@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using Byd.VehicleManagement.Consts;
 using Byd.VehicleManagement.Entities.Lookups;
-using Volo.Abp.Domain.Repositories;
+using Byd.VehicleManagement.Interfaces.Lookups;
 
 namespace Byd.VehicleManagement.Managers.Lookups;
 
 // islevi: TransportMode satirlarinin olusturulmasini ve varsayilan satirlarini ortak lookup kurallarina baglar.
 // sistemdeki gorevi: TransportMode icin tipli entity kurulumunu ve seed tanimlarini saglar.
-public class TransportModeManager(IRepository<TransportMode, int> repository)
+public class TransportModeManager(IVehicleLookupRepository<TransportMode> repository)
     : BaseLookupManager<TransportMode>(repository)
 {
     // Varsayilan ulasim modu satirlarini Domain.Shared uzerinden alir.

@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using Byd.VehicleManagement.Consts;
 using Byd.VehicleManagement.Entities.Lookups;
-using Volo.Abp.Domain.Repositories;
+using Byd.VehicleManagement.Interfaces.Lookups;
 
 namespace Byd.VehicleManagement.Managers.Lookups;
 
 // islevi: EquipmentType satirlarinin olusturulmasini ve varsayilan satirlarini ortak lookup kurallarina baglar.
 // sistemdeki gorevi: EquipmentType icin tipli entity kurulumunu ve seed tanimlarini saglar.
-public class EquipmentTypeManager(IRepository<EquipmentType, int> repository)
+public class EquipmentTypeManager(IVehicleLookupRepository<EquipmentType> repository)
     : BaseLookupManager<EquipmentType>(repository)
 {
     // Varsayilan donanim turu satirlarini Domain.Shared uzerinden alir.
