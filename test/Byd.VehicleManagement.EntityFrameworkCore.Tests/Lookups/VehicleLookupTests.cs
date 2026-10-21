@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using Byd.VehicleManagement.Dtos.Lookups;
 using Byd.VehicleManagement.Entities.Lookups;
+using Byd.VehicleManagement.Interfaces.Lookups;
 using Byd.VehicleManagement.Managers.Lookups;
 using Byd.VehicleManagement.Mappers.Lookups;
 using Byd.VehicleManagement.Models.Lookups;
-using Volo.Abp.Domain.Repositories;
 using Xunit;
 
 namespace Byd.VehicleManagement.EntityFrameworkCore.Lookups;
@@ -18,7 +18,7 @@ public class VehicleLookupTests
     [Fact]
     public async Task ManagerAndMapper_CreateAndUpdateTransportMode()
     {
-        var repository = Substitute.For<IRepository<TransportMode, int>>();
+        var repository = Substitute.For<IVehicleLookupRepository<TransportMode>>();
         var manager = new TransportModeManager(repository);
         var mapper = new TransportModeMapper();
 
@@ -36,7 +36,7 @@ public class VehicleLookupTests
     }
 
     [Fact]
-    public async Task Migration_CreatesFiveEmptyLookupTablesWithUniqueCodes()
+    public async Task Migrations_CreateFiveEmptyLookupTablesWithUniqueCodes()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");
         await connection.OpenAsync();
@@ -44,13 +44,14 @@ public class VehicleLookupTests
             new DbContextOptionsBuilder<VehicleManagementDbContext>().UseSqlite(connection).Options);
 
         await context.Database.MigrateAsync();
-        Assert.Single(await context.Database.GetAppliedMigrationsAsync());
+        Assert.Equal(context.Database.GetMigrations().Count(), (await context.Database.GetAppliedMigrationsAsync()).Count());
         Assert.False(await context.TransportModes.AnyAsync());
         Assert.False(await context.FuelTypes.AnyAsync());
         Assert.False(await context.VehicleStatuses.AnyAsync());
         Assert.False(await context.WheelchairAccessibles.AnyAsync());
         Assert.False(await context.EquipmentTypes.AnyAsync());
-        var entities = context.Model.GetEntityTypes().ToList();
+        var entities = context.Model.GetEntityTypes()
+            .Where(entity => typeof(VehicleLookup).IsAssignableFrom(entity.ClrType)).ToList();
         Assert.Equal(5, entities.Count);
         Assert.All(entities, entity =>
         {

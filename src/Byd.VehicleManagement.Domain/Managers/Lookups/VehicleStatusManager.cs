@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using Byd.VehicleManagement.Consts;
 using Byd.VehicleManagement.Entities.Lookups;
-using Volo.Abp.Domain.Repositories;
+using Byd.VehicleManagement.Interfaces.Lookups;
 
 namespace Byd.VehicleManagement.Managers.Lookups;
 
 // islevi: VehicleStatus satirlarinin olusturulmasini ve varsayilan satirlarini ortak lookup kurallarina baglar.
 // sistemdeki gorevi: VehicleStatus icin tipli entity kurulumunu ve seed tanimlarini saglar.
-public class VehicleStatusManager(IRepository<VehicleStatus, int> repository)
+public class VehicleStatusManager(IVehicleLookupRepository<VehicleStatus> repository)
     : BaseLookupManager<VehicleStatus>(repository)
 {
     // Varsayilan arac durumu satirlarini Domain.Shared uzerinden alir.

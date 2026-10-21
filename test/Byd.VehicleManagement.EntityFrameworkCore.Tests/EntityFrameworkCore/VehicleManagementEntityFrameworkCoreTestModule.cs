@@ -2,7 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Byd.CoreExtensions.Options;
+using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore.Sqlite;
 using Volo.Abp.Modularity;
@@ -25,6 +28,9 @@ public class VehicleManagementEntityFrameworkCoreTestModule : AbpModule
             options.EnvironmentName = "Test";
         });
         context.Services.AddAlwaysDisableUnitOfWorkTransaction();
+        // Testler tek SQLite baglantisinda calisir; tenant degistiren testlerde baglanti dizesi icin tenant deposu
+        // (auth'un PostgreSQL tablolari) aranmaz.
+        context.Services.Replace(ServiceDescriptor.Transient<IConnectionStringResolver, DefaultConnectionStringResolver>());
 
         var sqliteConnection = CreateDatabaseAndGetConnection();
 
