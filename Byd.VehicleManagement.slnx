@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/host/">
+    <Project Path="host/Byd.VehicleManagement.Host.Shared/Byd.VehicleManagement.Host.Shared.csproj" />
+    <Project Path="host/Byd.VehicleManagement.HttpApi.Host/Byd.VehicleManagement.HttpApi.Host.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Byd.VehicleManagement.Application.Contracts/Byd.VehicleManagement.Application.Contracts.csproj" />
+    <Project Path="src/Byd.VehicleManagement.Application/Byd.VehicleManagement.Application.csproj" />
+    <Project Path="src/Byd.VehicleManagement.Domain.Shared/Byd.VehicleManagement.Domain.Shared.csproj" />
+    <Project Path="src/Byd.VehicleManagement.Domain/Byd.VehicleManagement.Domain.csproj" />
+    <Project Path="src/Byd.VehicleManagement.EntityFrameworkCore/Byd.VehicleManagement.EntityFrameworkCore.csproj" />
+    <Project Path="src/Byd.VehicleManagement.HttpApi.Client/Byd.VehicleManagement.HttpApi.Client.csproj" />
+    <Project Path="src/Byd.VehicleManagement.HttpApi/Byd.VehicleManagement.HttpApi.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/Byd.VehicleManagement.Application.Tests/Byd.VehicleManagement.Application.Tests.csproj" />
+    <Project Path="test/Byd.VehicleManagement.Domain.Tests/Byd.VehicleManagement.Domain.Tests.csproj" />
+    <Project Path="test/Byd.VehicleManagement.EntityFrameworkCore.Tests/Byd.VehicleManagement.EntityFrameworkCore.Tests.csproj" />
+    <Project Path="test/Byd.VehicleManagement.TestBase/Byd.VehicleManagement.TestBase.csproj" />
+  </Folder>
+</Solution>
