@@ -13,7 +13,7 @@ using Volo.Abp.EntityFrameworkCore;
 namespace Byd.VehicleManagement.Migrations
 {
     [DbContext(typeof(VehicleManagementDbContext))]
-    [Migration("20261021124251_CreateVehiclesAndVehicleEquipments")]
+    [Migration("20261021125440_CreateVehiclesAndVehicleEquipments")]
     partial class CreateVehiclesAndVehicleEquipments
     {
         /// <inheritdoc />
@@ -561,9 +561,7 @@ namespace Byd.VehicleManagement.Migrations
                         .HasDatabaseName("ix_vehicles_wheelchair_accessible_id");
 
                     b.HasIndex("TenantId", "RegistrationNumber")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Vehicles_Tenant_RegistrationNumber")
-                        .HasFilter("registration_number IS NOT NULL");
+                        .HasDatabaseName("IX_Vehicles_Tenant_RegistrationNumber");
 
                     b.HasIndex("TenantId", "OrganizationId", "GtfsAgencyId", "GtfsVehicleId")
                         .IsUnique()

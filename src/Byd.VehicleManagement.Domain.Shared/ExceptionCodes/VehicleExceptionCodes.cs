@@ -18,8 +18,7 @@ public static class VehicleExceptionCodes
     public const string VehicleStatusNotFound = VehicleManagementErrorCodes.VehicleGroup + "0012";
     public const string WheelchairAccessibleNotFound = VehicleManagementErrorCodes.VehicleGroup + "0013";
     public const string GtfsVehicleIdAlreadyExists = VehicleManagementErrorCodes.VehicleGroup + "0014";
-    public const string RegistrationNumberAlreadyExists = VehicleManagementErrorCodes.VehicleGroup + "0015";
-    public const string TransportModeNotFound = VehicleManagementErrorCodes.VehicleGroup + "0016";
-    public const string VehicleTypeTransportModeMismatch = VehicleManagementErrorCodes.VehicleGroup + "0017";
-    public const string RegistrationSourceNotFound = VehicleManagementErrorCodes.VehicleGroup + "0018";
+    public const string TransportModeNotFound = VehicleManagementErrorCodes.VehicleGroup + "0015";
+    public const string VehicleTypeTransportModeMismatch = VehicleManagementErrorCodes.VehicleGroup + "0016";
+    public const string RegistrationSourceNotFound = VehicleManagementErrorCodes.VehicleGroup + "0017";
 }

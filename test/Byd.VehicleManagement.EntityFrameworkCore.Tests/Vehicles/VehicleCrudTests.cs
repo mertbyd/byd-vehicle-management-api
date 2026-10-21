@@ -59,7 +59,7 @@ public class VehicleCrudTests : VehicleManagementEntityFrameworkCoreTestBase
     }
 
     [Fact]
-    public async Task VehicleService_ScopesGtfsIdToOrganizationAndPlateToTenant()
+    public async Task VehicleService_ScopesGtfsIdToOrganizationAndAllowsSharedPlate()
     {
         await WithUnitOfWorkAsync(SeedLookupsAsync);
         using var tenant = CurrentTenant.Change(TenantId);
@@ -75,8 +75,8 @@ public class VehicleCrudTests : VehicleManagementEntityFrameworkCoreTestBase
         {
             var type = await CreateTypeAsync("U18E-48");
             await WithUnitOfWorkAsync(() => VehicleService.CreateAsync(NewVehicle(type.Id, "3105", null)));
-            await AssertCodeAsync(VehicleExceptionCodes.RegistrationNumberAlreadyExists,
-                () => VehicleService.CreateAsync(NewVehicle(type.Id, "4210", "BUS 105")));
+            var sharedPlate = await WithUnitOfWorkAsync(() => VehicleService.CreateAsync(NewVehicle(type.Id, "4210", "BUS 105")));
+            Assert.Equal("BUS 105", sharedPlate.RegistrationNumber);
         }
     }
 
@@ -141,7 +141,7 @@ public class VehicleCrudTests : VehicleManagementEntityFrameworkCoreTestBase
     }
 
     [Fact]
-    public async Task RealtimeService_SeparatesOperatorsAndRegistersCollidingPlateWithoutIt()
+    public async Task RealtimeService_SeparatesOperatorsAndKeepsPlateAsReceived()
     {
         await WithUnitOfWorkAsync(SeedLookupsAsync);
         using var tenant = CurrentTenant.Change(TenantId);
@@ -155,7 +155,7 @@ public class VehicleCrudTests : VehicleManagementEntityFrameworkCoreTestBase
 
         var first = await RegisterAsync(new() { RouteType = BusRouteType, GtfsVehicleId = "2806", RegistrationNumber = "EC 5197" });
         var second = await RegisterAsync(new() { RouteType = BusRouteType, GtfsVehicleId = "2810", RegistrationNumber = "EC 5197" });
-        Assert.Equal(("EC 5197", null), (first.RegistrationNumber, second.RegistrationNumber));
+        Assert.Equal(("EC 5197", "EC 5197"), (first.RegistrationNumber, second.RegistrationNumber));
         Assert.NotEqual(first.Id, second.Id);
     }
 

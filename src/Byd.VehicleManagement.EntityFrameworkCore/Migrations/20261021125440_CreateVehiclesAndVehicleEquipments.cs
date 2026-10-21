@@ -163,9 +163,7 @@ namespace Byd.VehicleManagement.Migrations
                 name: "IX_Vehicles_Tenant_RegistrationNumber",
                 schema: "vehicle_management",
                 table: "Vehicles",
-                columns: new[] { "tenant_id", "registration_number" },
-                unique: true,
-                filter: "registration_number IS NOT NULL");
+                columns: new[] { "tenant_id", "registration_number" });
 
             migrationBuilder.CreateIndex(
                 name: "ix_vehicles_registration_source_id",

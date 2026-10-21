@@ -36,7 +36,7 @@ public class VehicleController : VehicleManagementController
     ///   WheelchairAccessibleId (int?)                       → Tekerlekli sandalye erisimi; yalniz tipten farkliysa
     ///   GtfsVehicleId          (string)                     → GTFS-RT vehicle.id; zorunlu, organizasyonda GtfsAgencyId ile birlikte tekil, en fazla 100
     ///   Label                  (string?)                    → Yolcunun gordugu numara; en fazla 50
-    ///   RegistrationNumber     (string?)                    → Plaka; tenant'ta tekil, en fazla 20
+    ///   RegistrationNumber     (string?)                    → Plaka; kaynaktaki haliyle tutulur, tekil degildir, en fazla 20
     ///   GtfsAgencyId           (string?)                    → GTFS agency_id; en fazla 100
     ///   InServiceFrom          (DateOnly)                   → Hizmete giris gunu; zorunlu
     ///   InServiceUntil         (DateOnly?)                  → Hizmetten cikis gunu; verildiyse giris gununden once olamaz
@@ -53,7 +53,7 @@ public class VehicleController : VehicleManagementController
     /// }
     /// Arac istegin organizasyonuna yazilir; tenant ve organizasyonsuz istek reddedilir. Baska organizasyonun tipi
     /// ve farkli kipteki tip secilemez. Arac Manuel kaynakli kaydedilir. GTFS-RT kimligi organizasyonda ayni isletmeci
-    /// icin, plaka tenant'ta ikinci kez kullanilamaz. Model ve kapasite tipten okunur; bu endpoint tip ve donanim
+    /// icin ikinci kez kullanilamaz; plaka tekil sayilmaz. Model ve kapasite tipten okunur; bu endpoint tip ve donanim
     /// olusturmaz.
     /// </remarks>
     [HttpPost]
@@ -120,7 +120,7 @@ public class VehicleController : VehicleManagementController
     ///   WheelchairAccessibleId (int?)                       → Tekerlekli sandalye erisimi; yalniz tipten farkliysa
     ///   GtfsVehicleId          (string)                     → GTFS-RT vehicle.id; zorunlu, organizasyonda GtfsAgencyId ile birlikte tekil, en fazla 100
     ///   Label                  (string?)                    → Yolcunun gordugu numara; en fazla 50
-    ///   RegistrationNumber     (string?)                    → Plaka; tenant'ta tekil, en fazla 20
+    ///   RegistrationNumber     (string?)                    → Plaka; kaynaktaki haliyle tutulur, tekil degildir, en fazla 20
     ///   GtfsAgencyId           (string?)                    → GTFS agency_id; en fazla 100
     ///   InServiceFrom          (DateOnly)                   → Hizmete giris gunu; zorunlu
     ///   InServiceUntil         (DateOnly?)                  → Hizmetten cikis gunu; verildiyse giris gununden once olamaz

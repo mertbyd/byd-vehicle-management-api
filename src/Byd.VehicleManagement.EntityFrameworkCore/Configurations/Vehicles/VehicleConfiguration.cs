@@ -6,8 +6,8 @@ using Volo.Abp.EntityFrameworkCore.Modeling;
 
 namespace Byd.VehicleManagement.EntityFrameworkCore;
 
-// islevi: Vehicle tablosunun tip ve lookup iliskilerini; isletmeciyle birlikte GTFS-RT kimligi ile plaka tekilligini
-// tanimlar.
+// islevi: Vehicle tablosunun tip ve lookup iliskilerini, isletmeciyle birlikte GTFS-RT kimligi tekilligini ve plaka
+// arama indeksini tanimlar.
 // sistemdeki gorevi: Kullanilan tip veya lookup satirinin silinmesini veritabani duzeyinde de engeller.
 public sealed class VehicleConfiguration : IEntityTypeConfiguration<Vehicle>
 {
@@ -39,8 +39,8 @@ public sealed class VehicleConfiguration : IEntityTypeConfiguration<Vehicle>
                 vehicle.TenantId, vehicle.OrganizationId, vehicle.GtfsAgencyId, vehicle.GtfsVehicleId
             })
             .IsUnique().AreNullsDistinct(false).HasDatabaseName(VehicleConsts.GtfsVehicleIdIndex);
+        // Plaka kimlik degildir; kaynakta iki aracta ayni plaka gelebilir. Index yalniz plakayla aramayi hizlandirir.
         builder.HasIndex(vehicle => new { vehicle.TenantId, vehicle.RegistrationNumber })
-            .IsUnique().HasFilter(VehicleConsts.RegistrationNumberIndexFilter)
             .HasDatabaseName(VehicleConsts.RegistrationNumberIndex);
     }
 }

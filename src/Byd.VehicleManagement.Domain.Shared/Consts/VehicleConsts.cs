@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Byd.VehicleManagement.Consts;
 
-// islevi: Vehicle tablosunun adini, tekillik indekslerini, alan uzunluklarini ve realtime degerlerinin lookup kodu
+// islevi: Vehicle tablosunun adini, indekslerini, alan uzunluklarini ve realtime degerlerinin lookup kodu
 // karsiliklarini tanimlar.
 // sistemdeki gorevi: Entity, EF eslemesi, validator ve realtime kaydinin ayni arac sozlesmesini okumasini saglar.
 public static class VehicleConsts
@@ -10,9 +10,6 @@ public static class VehicleConsts
     public const string TableName = "Vehicles";
     public const string GtfsVehicleIdIndex = "IX_Vehicles_Scope_Agency_GtfsVehicleId";
     public const string RegistrationNumberIndex = "IX_Vehicles_Tenant_RegistrationNumber";
-
-    // Plakasi girilmemis araclar tekillige katilmaz; filtre veritabani kolon adiyla yazilir.
-    public const string RegistrationNumberIndexFilter = "registration_number IS NOT NULL";
 
     public const int MaxGtfsVehicleIdLength = 100;
     public const int MaxLabelLength = 50;

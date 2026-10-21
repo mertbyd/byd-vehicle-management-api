@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Byd.CoreExtensions.ExceptionCodes;
@@ -17,15 +15,15 @@ using Byd.VehicleManagement.Interfaces.Vehicles;
 using Byd.VehicleManagement.Interfaces.VehicleTypes;
 using Byd.VehicleManagement.Models.Vehicles;
 using Volo.Abp;
-using Volo.Abp.Data;
 
 namespace Byd.VehicleManagement.Managers.Vehicles;
 
 // islevi: Aracin kapsamini, kip ve tip uyumunu, lookup baglarini, kayit kaynagini, isletmeciyle birlikte GTFS kimligi
-// ile plaka tekilligini, realtime kaynakli otomatik kaydi ve silme kuralini yonetir.
+// tekilligini, realtime kaynakli otomatik kaydi ve silme kuralini yonetir.
 // sistemdeki gorevi: Arac aggregate'inin tek kural sahibidir. Elle eklenen arac Manuel, realtime'da gorulup eklenen arac
 // Realtime kaynaklidir; realtime araci tipsiz baslar ve tip sonradan ayni kipte atanir. Realtime girdisi GTFS
-// standardinin degerleriyle gelir; kimlik ve kip kaydin sartidir, plaka ve erisim bilgisi bozuksa bos birakilir.
+// standardinin degerleriyle gelir; kimlik ve kip kaydin sartidir. Plaka kaynaktaki haliyle tutulur, tekil sayilmaz;
+// ayni plakanin iki aracta gorunmesi kaynaktaki veridir ve gizlenmez.
 public class VehicleManager(
     IVehicleRepository repository,
     IVehicleCacheRepository cacheRepository,
@@ -38,8 +36,6 @@ public class VehicleManager(
 {
     private ICurrentOrganization CurrentOrganization =>
         LazyServiceProvider.LazyGetRequiredService<ICurrentOrganization>();
-
-    private IDataFilter DataFilter => LazyServiceProvider.LazyGetRequiredService<IDataFilter>();
 
     // Istegin kapsaminda elle eklenen araci kurar.
     public virtual async Task<Vehicle> CreateAsync(VehicleCreateModel model, CancellationToken cancellationToken = default)
@@ -84,9 +80,9 @@ public class VehicleManager(
         entity.GtfsAgencyId = NormalizeOptionalText(model.GtfsAgencyId);
         entity.GtfsVehicleId = NormalizeRequiredText(model.GtfsVehicleId);
         entity.Label = NormalizeOptionalText(model.Label);
+        entity.RegistrationNumber = NormalizeOptionalText(model.RegistrationNumber);
         entity.InServiceFrom = DateOnly.FromDateTime(Clock.Now);
         await EnsureGtfsVehicleIdUniqueAsync(entity, cancellationToken);
-        await ApplyRealtimeRegistrationNumberAsync(entity, model.RegistrationNumber, cancellationToken);
         return entity;
     }
 
@@ -117,7 +113,7 @@ public class VehicleManager(
         entity.VehicleStatusId = entity.VehicleStatus.Id;
         await ApplyWheelchairAccessibleAsync(entity, model.WheelchairAccessibleId, cancellationToken);
         ApplyColumns(entity, model);
-        await EnsureIdentifiersUniqueAsync(entity, cancellationToken);
+        await EnsureGtfsVehicleIdUniqueAsync(entity, cancellationToken);
     }
 
     // Kip lookup'ta bulunur ve araca baglanir.
@@ -185,15 +181,6 @@ public class VehicleManager(
         entity.WheelchairAccessibleId = entity.WheelchairAccessible?.Id;
     }
 
-    // Feed'in plakasi dogrulanmamis bilgidir; tenant'ta baska bir aracta varsa yazilmaz ve arac plakasiz kaydedilir.
-    private async Task ApplyRealtimeRegistrationNumberAsync(
-        Vehicle entity, string? registrationNumber, CancellationToken cancellationToken = default)
-    {
-        entity.RegistrationNumber = NormalizeOptionalText(registrationNumber);
-        if (await IsRegistrationNumberUsedAsync(entity, cancellationToken))
-            entity.RegistrationNumber = null;
-    }
-
     // Kaynak satirini sabit koduyla bulur ve araca baglar.
     private async Task ApplyRegistrationSourceAsync(Vehicle entity, int code, CancellationToken cancellationToken = default)
     {
@@ -223,44 +210,17 @@ public class VehicleManager(
         entity.InServiceUntil = model.InServiceUntil;
     }
 
-    // Elle girilen kayitta GTFS-RT kimligi ve plaka cakismasi reddedilir.
-    private async Task EnsureIdentifiersUniqueAsync(Vehicle entity, CancellationToken cancellationToken = default)
-    {
-        await EnsureGtfsVehicleIdUniqueAsync(entity, cancellationToken);
-        if (await IsRegistrationNumberUsedAsync(entity, cancellationToken))
-            throw new BusinessException(VehicleExceptionCodes.RegistrationNumberAlreadyExists);
-    }
-
     // GTFS-RT kimligi organizasyonda isletmeciyle birlikte tekildir; farkli isletmecilerin ayni numarali araclari ayri
-    // kayittir, isletmecisi bos araclar birbirine esit sayilir.
+    // kayittir, isletmecisi bos araclar birbirine esit sayilir. Plaka kimlik degildir ve tekillige katilmaz.
     private async Task EnsureGtfsVehicleIdUniqueAsync(Vehicle entity, CancellationToken cancellationToken = default)
     {
-        if (await IsUsedByAnotherAsync(entity,
-                vehicle => vehicle.GtfsAgencyId == entity.GtfsAgencyId && vehicle.GtfsVehicleId == entity.GtfsVehicleId,
-                cancellationToken))
+        var id = entity.Id;
+        var agencyId = entity.GtfsAgencyId;
+        var vehicleId = entity.GtfsVehicleId;
+        var others = await Repository.GetListAsync(
+            vehicle => vehicle.GtfsAgencyId == agencyId && vehicle.GtfsVehicleId == vehicleId,
+            cancellationToken: cancellationToken);
+        if (others.Any(vehicle => vehicle.Id != id))
             throw new BusinessException(VehicleExceptionCodes.GtfsVehicleIdAlreadyExists);
     }
-
-    // Plaka tenant'ta tekildir; baska organizasyonun araci da sayilsin diye kontrol boyunca organizasyon filtresi
-    // kapatilir. Plakasiz arac kontrole girmez.
-    private async Task<bool> IsRegistrationNumberUsedAsync(Vehicle entity, CancellationToken cancellationToken = default)
-    {
-        if (entity.RegistrationNumber is null)
-            return false;
-        using (DataFilter.Disable<IMultiOrganization>())
-        {
-            return await IsUsedByAnotherAsync(entity,
-                vehicle => vehicle.RegistrationNumber == entity.RegistrationNumber, cancellationToken);
-        }
-    }
-
-    // Aracin kendisi disinda kosula uyan bir arac olup olmadigini dondurur.
-    private async Task<bool> IsUsedByAnotherAsync(
-        Vehicle entity, Expression<Func<Vehicle, bool>> duplicate, CancellationToken cancellationToken = default)
-    {
-        var id = entity.Id;
-        var others = await Repository.GetListAsync(duplicate, cancellationToken: cancellationToken);
-        return others.Any(vehicle => vehicle.Id != id);
-    }
-
 }
