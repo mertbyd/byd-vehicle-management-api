@@ -5,9 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Byd.CoreExtensions.ExceptionCodes;
 using Byd.CoreExtensions.Interfaces;
 using Byd.CoreExtensions.Querying;
+using Byd.VehicleManagement.Consumer.Handlers.Vehicles;
 using Byd.VehicleManagement.Data.Lookups;
 using Byd.VehicleManagement.Dtos.Vehicles;
 using Byd.VehicleManagement.Dtos.VehicleTypes;
+using Byd.VehicleManagement.Etos.Vehicles;
 using Byd.VehicleManagement.ExceptionCodes;
 using Byd.VehicleManagement.Services.Vehicles;
 using Byd.VehicleManagement.Services.VehicleTypes;
@@ -121,6 +123,48 @@ public class VehicleCrudTests : VehicleManagementEntityFrameworkCoreTestBase
         await WithUnitOfWorkAsync(() => VehicleService.UpdateAsync(registered.Id, assigned));
         var refreshed = await WithUnitOfWorkAsync(() => VehicleService.FindOrRegisterRealtimeAsync(seen));
         Assert.Equal(("U18E-48 tipi", registered.Id), (refreshed.VehicleTypeName, refreshed.Id));
+    }
+
+    [Fact]
+    public async Task RealtimeService_RegistersVehicleWithoutRouteType()
+    {
+        await WithUnitOfWorkAsync(SeedLookupsAsync);
+        using var tenant = CurrentTenant.Change(TenantId);
+        using var organization = CurrentOrganization.Change(OrganizationId);
+
+        var registered = await RegisterAsync(new() { GtfsVehicleId = "1115", Label = "1115" });
+
+        Assert.Null(registered.TransportModeId);
+        Assert.Null(registered.TransportModeName);
+        var stored = await WithUnitOfWorkAsync(() => VehicleService.GetAsync(registered.Id));
+        Assert.Equal("Realtime", stored.RegistrationSourceName);
+        Assert.Null(stored.TransportModeId);
+        Assert.Equal(registered.Id, (await RegisterAsync(new() { GtfsVehicleId = "1115" })).Id);
+    }
+
+    [Fact]
+    public async Task RegistrationRequestedHandler_RegistersWithinEventScopeAndIgnoresRedelivery()
+    {
+        await WithUnitOfWorkAsync(SeedLookupsAsync);
+        var handler = ServiceProvider.GetRequiredService<VehicleRegistrationRequestedEventHandler>();
+        var requested = new VehicleRegistrationRequestedEto
+        {
+            TenantId = TenantId,
+            OrganizationId = OrganizationId,
+            GtfsVehicleId = "1115",
+            Label = "1115"
+        };
+
+        await handler.HandleEventAsync(requested);
+        await handler.HandleEventAsync(requested);
+
+        using var tenant = CurrentTenant.Change(TenantId);
+        using var organization = CurrentOrganization.Change(OrganizationId);
+        var page = await WithUnitOfWorkAsync(() => VehicleService.GetFilteredListAsync(new DataTableListInput<VehicleFilter>()));
+        Assert.Single(page.Items);
+        Assert.Equal("1115", page.Items[0].GtfsVehicleId);
+        Assert.Equal("Realtime", page.Items[0].RegistrationSourceName);
+        Assert.Null(page.Items[0].TransportModeId);
     }
 
     [Fact]

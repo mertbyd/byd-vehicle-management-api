@@ -4,7 +4,7 @@ namespace Byd.VehicleManagement.Models.Vehicles;
 // sistemdeki gorevi: Realtime kaynakli otomatik kaydin domain girdisidir; tip, durum ve hizmet donemi istekten alinmaz.
 public class VehicleRealtimeRegistrationModel
 {
-    public int RouteType { get; set; }
+    public int? RouteType { get; set; }
     public int? WheelchairAccessible { get; set; }
     public string GtfsVehicleId { get; set; } = default!;
     public string? Label { get; set; }

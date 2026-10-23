@@ -22,7 +22,7 @@ namespace Byd.VehicleManagement.Managers.Vehicles;
 // tekilligini, realtime kaynakli otomatik kaydi ve silme kuralini yonetir.
 // sistemdeki gorevi: Arac aggregate'inin tek kural sahibidir. Elle eklenen arac Manuel, realtime'da gorulup eklenen arac
 // Realtime kaynaklidir; realtime araci tipsiz baslar ve tip sonradan ayni kipte atanir. Realtime girdisi GTFS
-// standardinin degerleriyle gelir; kimlik ve kip kaydin sartidir. Plaka kaynaktaki haliyle tutulur, tekil sayilmaz;
+// standardinin degerleriyle gelir; kimlik sarttir, kip bildirilmemisse bos kalir. Plaka kaynaktaki haliyle tutulur, tekil sayilmaz;
 // ayni plakanin iki aracta gorunmesi kaynaktaki veridir ve gizlenmez.
 public class VehicleManager(
     IVehicleRepository repository,
@@ -149,12 +149,14 @@ public class VehicleManager(
         entity.WheelchairAccessibleId = entity.WheelchairAccessible?.Id;
     }
 
-    // GTFS route_type degerini lookup koduna cevirip kipi baglar; karsiligi olmayan tur kaydi durdurur, kip tahmin edilmez.
-    private async Task ApplyRouteTypeAsync(Vehicle entity, int routeType, CancellationToken cancellationToken = default)
+    // Bildirilen GTFS route_type degerini lookup koduna cevirir; deger yoksa kip bos kalir, bilinmeyen kod reddedilir.
+    private async Task ApplyRouteTypeAsync(Vehicle entity, int? routeType, CancellationToken cancellationToken = default)
     {
-        entity.TransportMode = await FindByCodeAsync(transportModeRepository, ToBasicRouteType(routeType),
-            VehicleExceptionCodes.TransportModeNotFound, cancellationToken);
-        entity.TransportModeId = entity.TransportMode.Id;
+        entity.TransportMode = routeType is null
+            ? null
+            : await FindByCodeAsync(transportModeRepository, ToBasicRouteType(routeType.Value),
+                VehicleExceptionCodes.TransportModeNotFound, cancellationToken);
+        entity.TransportModeId = entity.TransportMode?.Id;
     }
 
     // Genisletilmis route_type araligin temel karsiligina iner; temel deger oldugu gibi kalir.

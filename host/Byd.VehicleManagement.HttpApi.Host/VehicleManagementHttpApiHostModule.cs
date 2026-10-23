@@ -13,6 +13,7 @@ using Byd.CoreExtensions;
 using Byd.CoreExtensions.Extensions;
 using Byd.CoreExtensions.Options;
 using Byd.FileManagement;
+using Byd.VehicleManagement.Consumer;
 using Byd.VehicleManagement.EntityFrameworkCore;
 using Byd.VehicleManagement.MultiTenancy;
 using Volo.Abp;
@@ -33,6 +34,7 @@ namespace Byd.VehicleManagement;
 [DependsOn(
     typeof(VehicleManagementApplicationModule),
     typeof(VehicleManagementEntityFrameworkCoreModule),
+    typeof(VehicleManagementConsumerModule),
     typeof(VehicleManagementHttpApiModule),
     typeof(AbpAspNetCoreMvcUiMultiTenancyModule),
     typeof(AbpAspNetCoreAuthenticationJwtBearerModule),

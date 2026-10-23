@@ -58,6 +58,10 @@
     "Byd.VehicleManagement.Host.Shared": {
       "path": "host/Byd.VehicleManagement.Host.Shared/Byd.VehicleManagement.Host.Shared.abppkg",
       "folder": "host"
+    },
+    "Byd.VehicleManagement.Consumer": {
+      "path": "src/Byd.VehicleManagement.Consumer/Byd.VehicleManagement.Consumer.abppkg",
+      "folder": "src"
     }
   }
 }

@@ -12,14 +12,14 @@ public class VehicleDto
 
     // Foreign Keys
     public Guid? VehicleTypeId { get; set; }
-    public int TransportModeId { get; set; }
+    public int? TransportModeId { get; set; }
     public int VehicleStatusId { get; set; }
     public int RegistrationSourceId { get; set; }
     public int? WheelchairAccessibleId { get; set; }
 
     // Table Columns / Data
     public string? VehicleTypeName { get; set; }
-    public string TransportModeName { get; set; } = default!;
+    public string? TransportModeName { get; set; }
     public string VehicleStatusName { get; set; } = default!;
     public string RegistrationSourceName { get; set; } = default!;
     public string? WheelchairAccessibleName { get; set; }

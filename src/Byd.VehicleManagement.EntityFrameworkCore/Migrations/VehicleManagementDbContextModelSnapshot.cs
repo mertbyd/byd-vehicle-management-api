@@ -523,7 +523,7 @@ namespace Byd.VehicleManagement.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("tenant_id");
 
-                    b.Property<int>("TransportModeId")
+                    b.Property<int?>("TransportModeId")
                         .HasColumnType("integer")
                         .HasColumnName("transport_mode_id");
 
@@ -634,7 +634,6 @@ namespace Byd.VehicleManagement.Migrations
                         .WithMany()
                         .HasForeignKey("TransportModeId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
                         .HasConstraintName("fk_vehicles_transport_modes_transport_mode_id");
 
                     b.HasOne("Byd.VehicleManagement.Entities.Lookups.VehicleStatus", "VehicleStatus")

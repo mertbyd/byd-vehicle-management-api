@@ -47,7 +47,7 @@ public class EfCoreVehicleCacheRepository(
         TransportModeId = source.TransportModeId,
         VehicleStatusId = source.VehicleStatusId,
         VehicleTypeName = source.VehicleType?.Name,
-        TransportModeName = source.TransportMode.Name,
+        TransportModeName = source.TransportMode?.Name,
         VehicleStatusName = source.VehicleStatus.Name,
         GtfsVehicleId = source.GtfsVehicleId,
         Label = source.Label,

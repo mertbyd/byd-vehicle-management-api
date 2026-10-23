@@ -13,7 +13,8 @@ public sealed class RegisterRealtimeVehicleDtoValidator : AbstractValidator<Regi
     public RegisterRealtimeVehicleDtoValidator()
     {
         RuleFor(input => input.RouteType)
-            .GreaterThanOrEqualTo(0).WithErrorCode(VehicleExceptionCodes.TransportModeRequired);
+            .GreaterThanOrEqualTo(0).When(input => input.RouteType.HasValue)
+            .WithErrorCode(VehicleExceptionCodes.TransportModeRequired);
         RuleFor(input => input.GtfsVehicleId)
             .NotEmpty().WithErrorCode(VehicleExceptionCodes.GtfsVehicleIdRequired)
             .MaximumLength(VehicleConsts.MaxGtfsVehicleIdLength).WithErrorCode(VehicleExceptionCodes.GtfsVehicleIdTooLong);

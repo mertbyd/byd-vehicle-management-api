@@ -27,6 +27,7 @@
     <ProjectReference Include="..\..\src\Byd.VehicleManagement.HttpApi\Byd.VehicleManagement.HttpApi.csproj" />
     <ProjectReference Include="..\..\src\Byd.VehicleManagement.Application\Byd.VehicleManagement.Application.csproj" />
     <ProjectReference Include="..\..\src\Byd.VehicleManagement.EntityFrameworkCore\Byd.VehicleManagement.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\src\Byd.VehicleManagement.Consumer\Byd.VehicleManagement.Consumer.csproj" />
     <ProjectReference Include="..\Byd.VehicleManagement.Host.Shared\Byd.VehicleManagement.Host.Shared.csproj" />
   </ItemGroup>
 

@@ -44,7 +44,7 @@ public class VehicleController : VehicleManagementController
     /// Response {
     ///   Id, VehicleTypeId, TransportModeId, VehicleStatusId, RegistrationSourceId, WheelchairAccessibleId → Baglar
     ///   VehicleTypeName          (string?) → Arac tipi adi; tip atanmadiysa bos
-    ///   TransportModeName        (string)  → Ulasim modu adi
+    ///   TransportModeName        (string?) → Ulasim modu adi; realtime kaydinda route_type yoksa bos
     ///   VehicleStatusName        (string)  → Hizmet durumu adi
     ///   RegistrationSourceName   (string)  → Kayit kaynagi; elle eklenen arac Manuel
     ///   WheelchairAccessibleName (string?) → Erisim adi; tipten farkli deger yoksa bos

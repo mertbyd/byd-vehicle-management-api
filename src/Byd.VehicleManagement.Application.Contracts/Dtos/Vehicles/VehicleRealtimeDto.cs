@@ -11,12 +11,12 @@ public class VehicleRealtimeDto
 
     // Foreign Keys
     public Guid? VehicleTypeId { get; set; }
-    public int TransportModeId { get; set; }
+    public int? TransportModeId { get; set; }
     public int VehicleStatusId { get; set; }
 
     // Table Columns / Data
     public string? VehicleTypeName { get; set; }
-    public string TransportModeName { get; set; } = default!;
+    public string? TransportModeName { get; set; }
     public string VehicleStatusName { get; set; } = default!;
     public string GtfsVehicleId { get; set; } = default!;
     public string? Label { get; set; }

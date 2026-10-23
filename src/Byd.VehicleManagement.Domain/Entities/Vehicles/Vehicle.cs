@@ -10,7 +10,7 @@ namespace Byd.VehicleManagement.Entities.Vehicles;
 // islevi: Bir organizasyonun filosundaki tek bir araci; GTFS-RT kimligini, kipini, numarasini, plakasini, durumunu,
 // kaynagini ve hizmet donemini saklar.
 // sistemdeki gorevi: Arac aggregate'inin kokudur; donanimlar kendi kayitlarinda tutulur ve aracla birlikte silinir.
-// Realtime'dan otomatik eklenen aracin tipi henuz bilinmez; kip feed'den gelir, tip atanana kadar model ve kapasite bos kalir.
+// Realtime'dan otomatik eklenen aracin tipi henuz bilinmez; route_type yoksa kip de bos kalir.
 public class Vehicle : AuditedAggregateRoot<Guid>, IMultiTenant, IMultiOrganization
 {
     // Kaydin ait oldugu tenant.
@@ -23,8 +23,8 @@ public class Vehicle : AuditedAggregateRoot<Guid>, IMultiTenant, IMultiOrganizat
     // tipi olmak zorundadir.
     public Guid? VehicleTypeId { get; internal set; }
 
-    // Aracin ulasim modu; realtime'da feed'in kipinden, elle eklemede secimden gelir.
-    public int TransportModeId { get; internal set; }
+    // Aracin ulasim modu; realtime akisi route_type bildirmediyse bos kalir.
+    public int? TransportModeId { get; internal set; }
 
     // Aracin hizmet durumu.
     public int VehicleStatusId { get; internal set; }
@@ -56,7 +56,7 @@ public class Vehicle : AuditedAggregateRoot<Guid>, IMultiTenant, IMultiOrganizat
     // Aracin tipi.
     public VehicleType? VehicleType { get; internal set; }
     // Aracin ulasim modu satiri.
-    public TransportMode TransportMode { get; internal set; } = default!;
+    public TransportMode? TransportMode { get; internal set; }
     // Aracin hizmet durumu satiri.
     public VehicleStatus VehicleStatus { get; internal set; } = default!;
     // Aracin kayit kaynagi satiri.
