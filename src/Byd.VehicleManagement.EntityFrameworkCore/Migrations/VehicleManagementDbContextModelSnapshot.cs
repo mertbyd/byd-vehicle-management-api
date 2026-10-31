@@ -86,6 +86,37 @@ namespace Byd.VehicleManagement.Migrations
                     b.ToView(null, (string)null);
                 });
 
+            modelBuilder.Entity("Byd.VehicleManagement.Entities.Lookups.RegistrationSource", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.HasIdentityOptions(b.Property<int>("Id"), 1000L, null, null, null, null, null);
+
+                    b.Property<int>("Code")
+                        .HasColumnType("integer")
+                        .HasColumnName("code");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_registration_sources");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("IX_RegistrationSources_Code");
+
+                    b.ToTable("RegistrationSources", "vehicle_management");
+
+                    b.ToView(null, (string)null);
+                });
+
             modelBuilder.Entity("Byd.VehicleManagement.Entities.Lookups.TransportMode", b =>
                 {
                     b.Property<int>("Id")
@@ -175,6 +206,75 @@ namespace Byd.VehicleManagement.Migrations
                         .HasDatabaseName("IX_WheelchairAccessibles_Code");
 
                     b.ToTable("WheelchairAccessibles", "vehicle_management");
+
+                    b.ToView(null, (string)null);
+                });
+
+            modelBuilder.Entity("Byd.VehicleManagement.Entities.VehicleEquipments.VehicleEquipment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("concurrency_stamp");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creation_time");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("creator_id");
+
+                    b.Property<int>("EquipmentTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("equipment_type_id");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("extra_properties");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_modification_time");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_modifier_id");
+
+                    b.Property<Guid?>("OrganizationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organization_id");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<int>("Units")
+                        .HasColumnType("integer")
+                        .HasColumnName("units");
+
+                    b.Property<Guid>("VehicleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("vehicle_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_vehicle_equipments");
+
+                    b.HasIndex("EquipmentTypeId")
+                        .HasDatabaseName("ix_vehicle_equipments_equipment_type_id");
+
+                    b.HasIndex("VehicleId", "EquipmentTypeId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_VehicleEquipments_Vehicle_EquipmentType");
+
+                    b.ToTable("VehicleEquipments", "vehicle_management");
 
                     b.ToView(null, (string)null);
                 });
@@ -352,6 +452,146 @@ namespace Byd.VehicleManagement.Migrations
                     b.ToView(null, (string)null);
                 });
 
+            modelBuilder.Entity("Byd.VehicleManagement.Entities.Vehicles.Vehicle", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("concurrency_stamp");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creation_time");
+
+                    b.Property<Guid?>("CreatorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("creator_id");
+
+                    b.Property<string>("ExtraProperties")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("extra_properties");
+
+                    b.Property<string>("GtfsAgencyId")
+                        .HasColumnType("text")
+                        .HasColumnName("gtfs_agency_id");
+
+                    b.Property<string>("GtfsVehicleId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("gtfs_vehicle_id");
+
+                    b.Property<DateOnly>("InServiceFrom")
+                        .HasColumnType("date")
+                        .HasColumnName("in_service_from");
+
+                    b.Property<DateOnly?>("InServiceUntil")
+                        .HasColumnType("date")
+                        .HasColumnName("in_service_until");
+
+                    b.Property<string>("Label")
+                        .HasColumnType("text")
+                        .HasColumnName("label");
+
+                    b.Property<DateTime?>("LastModificationTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_modification_time");
+
+                    b.Property<Guid?>("LastModifierId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("last_modifier_id");
+
+                    b.Property<Guid?>("OrganizationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("organization_id");
+
+                    b.Property<string>("RegistrationNumber")
+                        .HasColumnType("text")
+                        .HasColumnName("registration_number");
+
+                    b.Property<int>("RegistrationSourceId")
+                        .HasColumnType("integer")
+                        .HasColumnName("registration_source_id");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<int?>("TransportModeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("transport_mode_id");
+
+                    b.Property<int>("VehicleStatusId")
+                        .HasColumnType("integer")
+                        .HasColumnName("vehicle_status_id");
+
+                    b.Property<Guid?>("VehicleTypeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("vehicle_type_id");
+
+                    b.Property<int?>("WheelchairAccessibleId")
+                        .HasColumnType("integer")
+                        .HasColumnName("wheelchair_accessible_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_vehicles");
+
+                    b.HasIndex("RegistrationSourceId")
+                        .HasDatabaseName("ix_vehicles_registration_source_id");
+
+                    b.HasIndex("TransportModeId")
+                        .HasDatabaseName("ix_vehicles_transport_mode_id");
+
+                    b.HasIndex("VehicleStatusId")
+                        .HasDatabaseName("ix_vehicles_vehicle_status_id");
+
+                    b.HasIndex("VehicleTypeId")
+                        .HasDatabaseName("ix_vehicles_vehicle_type_id");
+
+                    b.HasIndex("WheelchairAccessibleId")
+                        .HasDatabaseName("ix_vehicles_wheelchair_accessible_id");
+
+                    b.HasIndex("TenantId", "RegistrationNumber")
+                        .HasDatabaseName("IX_Vehicles_Tenant_RegistrationNumber");
+
+                    b.HasIndex("TenantId", "OrganizationId", "GtfsAgencyId", "GtfsVehicleId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Vehicles_Scope_Agency_GtfsVehicleId");
+
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("TenantId", "OrganizationId", "GtfsAgencyId", "GtfsVehicleId"), false);
+
+                    b.ToTable("Vehicles", "vehicle_management");
+
+                    b.ToView(null, (string)null);
+                });
+
+            modelBuilder.Entity("Byd.VehicleManagement.Entities.VehicleEquipments.VehicleEquipment", b =>
+                {
+                    b.HasOne("Byd.VehicleManagement.Entities.Lookups.EquipmentType", "EquipmentType")
+                        .WithMany()
+                        .HasForeignKey("EquipmentTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_vehicle_equipments_equipment_types_equipment_type_id");
+
+                    b.HasOne("Byd.VehicleManagement.Entities.Vehicles.Vehicle", "Vehicle")
+                        .WithMany()
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_vehicle_equipments_vehicles_vehicle_id");
+
+                    b.Navigation("EquipmentType");
+
+                    b.Navigation("Vehicle");
+                });
+
             modelBuilder.Entity("Byd.VehicleManagement.Entities.VehicleTypes.VehicleType", b =>
                 {
                     b.HasOne("Byd.VehicleManagement.Entities.Lookups.FuelType", "FuelType")
@@ -379,6 +619,51 @@ namespace Byd.VehicleManagement.Migrations
                     b.Navigation("TransportMode");
 
                     b.Navigation("VehicleModel");
+                });
+
+            modelBuilder.Entity("Byd.VehicleManagement.Entities.Vehicles.Vehicle", b =>
+                {
+                    b.HasOne("Byd.VehicleManagement.Entities.Lookups.RegistrationSource", "RegistrationSource")
+                        .WithMany()
+                        .HasForeignKey("RegistrationSourceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_vehicles_registration_sources_registration_source_id");
+
+                    b.HasOne("Byd.VehicleManagement.Entities.Lookups.TransportMode", "TransportMode")
+                        .WithMany()
+                        .HasForeignKey("TransportModeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_vehicles_transport_modes_transport_mode_id");
+
+                    b.HasOne("Byd.VehicleManagement.Entities.Lookups.VehicleStatus", "VehicleStatus")
+                        .WithMany()
+                        .HasForeignKey("VehicleStatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_vehicles_vehicle_statuses_vehicle_status_id");
+
+                    b.HasOne("Byd.VehicleManagement.Entities.VehicleTypes.VehicleType", "VehicleType")
+                        .WithMany()
+                        .HasForeignKey("VehicleTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_vehicles_vehicle_types_vehicle_type_id");
+
+                    b.HasOne("Byd.VehicleManagement.Entities.Lookups.WheelchairAccessible", "WheelchairAccessible")
+                        .WithMany()
+                        .HasForeignKey("WheelchairAccessibleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_vehicles_wheelchair_accessibles_wheelchair_accessible_id");
+
+                    b.Navigation("RegistrationSource");
+
+                    b.Navigation("TransportMode");
+
+                    b.Navigation("VehicleStatus");
+
+                    b.Navigation("VehicleType");
+
+                    b.Navigation("WheelchairAccessible");
                 });
 #pragma warning restore 612, 618
         }

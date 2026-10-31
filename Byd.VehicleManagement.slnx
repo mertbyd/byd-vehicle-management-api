@@ -6,6 +6,7 @@
   <Folder Name="/src/">
     <Project Path="src/Byd.VehicleManagement.Application.Contracts/Byd.VehicleManagement.Application.Contracts.csproj" />
     <Project Path="src/Byd.VehicleManagement.Application/Byd.VehicleManagement.Application.csproj" />
+    <Project Path="src/Byd.VehicleManagement.Consumer/Byd.VehicleManagement.Consumer.csproj" />
     <Project Path="src/Byd.VehicleManagement.Domain.Shared/Byd.VehicleManagement.Domain.Shared.csproj" />
     <Project Path="src/Byd.VehicleManagement.Domain/Byd.VehicleManagement.Domain.csproj" />
     <Project Path="src/Byd.VehicleManagement.EntityFrameworkCore/Byd.VehicleManagement.EntityFrameworkCore.csproj" />

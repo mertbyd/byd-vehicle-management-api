@@ -2,7 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Byd.CoreExtensions.EntityFrameworkCore;
 using Byd.CoreExtensions.Extensions;
 using Byd.VehicleManagement.Entities.Lookups;
+using Byd.VehicleManagement.Entities.VehicleEquipments;
 using Byd.VehicleManagement.Entities.VehicleModels;
+using Byd.VehicleManagement.Entities.Vehicles;
 using Byd.VehicleManagement.Entities.VehicleTypes;
 using Volo.Abp.Data;
 
@@ -18,8 +20,11 @@ public class VehicleManagementDbContext : BydDbContext<VehicleManagementDbContex
     public DbSet<VehicleStatus> VehicleStatuses { get; set; } = default!;
     public DbSet<WheelchairAccessible> WheelchairAccessibles { get; set; } = default!;
     public DbSet<EquipmentType> EquipmentTypes { get; set; } = default!;
+    public DbSet<RegistrationSource> RegistrationSources { get; set; } = default!;
     public DbSet<VehicleModel> VehicleModels { get; set; } = default!;
     public DbSet<VehicleType> VehicleTypes { get; set; } = default!;
+    public DbSet<Vehicle> Vehicles { get; set; } = default!;
+    public DbSet<VehicleEquipment> VehicleEquipments { get; set; } = default!;
 
     public VehicleManagementDbContext(DbContextOptions<VehicleManagementDbContext> options)
         : base(options)

@@ -23,7 +23,9 @@ public class VehicleLookupApiTests
             (typeof(FuelTypeController), typeof(IFuelTypeAppService), VehicleLookupRoutes.FuelTypes),
             (typeof(VehicleStatusController), typeof(IVehicleStatusAppService), VehicleLookupRoutes.VehicleStatuses),
             (typeof(WheelchairAccessibleController), typeof(IWheelchairAccessibleAppService), VehicleLookupRoutes.WheelchairAccessibles),
-            (typeof(EquipmentTypeController), typeof(IEquipmentTypeAppService), VehicleLookupRoutes.EquipmentTypes)
+            (typeof(EquipmentTypeController), typeof(IEquipmentTypeAppService), VehicleLookupRoutes.EquipmentTypes),
+            (typeof(RegistrationSourceController), typeof(IRegistrationSourceAppService),
+                VehicleLookupRoutes.RegistrationSources)
         };
 
         foreach (var (controller, service, path) in endpoints)

@@ -9,9 +9,12 @@ public static class VehicleStatusConsts
     public const string TableName = "VehicleStatuses";
     public const string CodeIndex = "IX_VehicleStatuses_Code";
 
+    // Realtime akisindan otomatik eklenen aracin baslangic durumu.
+    public const int InServiceCode = 1;
+
     public static readonly IReadOnlyList<(int Id, string Name, int Code)> Definitions =
     [
-        (1, "Hizmette", 1),
+        (1, "Hizmette", InServiceCode),
         (2, "Yedek", 2),
         (3, "Bakımda", 3),
         (4, "Hizmet dışı", 4)
