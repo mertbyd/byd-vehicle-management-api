@@ -1,245 +1,111 @@
 # Byd.VehicleManagement
 
-[![NuGet](https://img.shields.io/nuget/v/Byd.VehicleManagement.Domain?label=Byd.VehicleManagement)](https://www.nuget.org/packages/Byd.VehicleManagement.Domain)
-![ABP](https://img.shields.io/badge/ABP-10.3-blue)
-![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)
-![GTFS](https://img.shields.io/badge/uyumlu-GTFS%20%2F%20GTFS--RT-0B8F50)
-
-Toplu taşıma filosunun modülü. Araç lookup'larını, üretici modellerini, organizasyona ait araç tiplerini, araçları ve araç
-donanımlarını tutar. Araç kimliği GTFS-RT ile uyumludur: canlı akışta görülen bir araç, kayıtlı değilse kendiliğinden
-eklenir.
-
-## İçindekiler
-
-- [Platformdaki yeri](#platformdaki-yeri)
-- [Bir bakışta](#bir-bakışta)
-- [Veri modeli](#veri-modeli)
-- [Özellikler](#özellikler)
-- [HTTP uçları](#http-uçları)
-- [Olaylar](#olaylar)
-- [Yetkiler](#yetkiler)
-- [Hata kodları](#hata-kodları)
-- [Bir modülde kullanmak](#bir-modülde-kullanmak)
-- [Geliştirme](#geliştirme)
-
-## Platformdaki yeri
+Toplu taşıma filosunun modülü. Araç lookup'larını, üretici modellerini, araç tiplerini, araçları ve araç donanımlarını
+yönetir. Araç kimliği GTFS-RT ile uyumludur: canlı akışta görülen ama kayıtlı olmayan araç otomatik eklenir.
 
 ```mermaid
 flowchart LR
-    AUTH[Byd.AuthManagement<br/>log, file, core ile] --> VEH[Byd.VehicleManagement<br/><b>bu repo</b>]
-    RT[Byd.GtfsRealtimeManagement] -- "VehicleRegistrationRequestedEto" --> VEH
-    VEH -- "VehicleEto" --> RT
+    AUTH[AuthManagement<br/>log, file, core ile] --> VEH[VehicleManagement]
+    RT[GtfsRealtimeManagement] -- "kayıtsız araç görüldü" --> VEH
+    VEH -- "araç değişti" --> RT
     style VEH fill:#6a48f5,color:#fff,stroke:#4a2fd0
 ```
 
-## Bir bakışta
+## Capabilities
 
-| | |
+| Capability | Ne sağlar |
 |---|---|
-| Paket ailesi | `Byd.VehicleManagement.*` |
-| Sürüm | `0.1.0` (`common.props`) |
-| Bağımlılık | `Byd.AuthManagement` 0.1.9, `Byd.LogManagement` 0.1.6 (file ve core onlarla gelir) |
-| Veritabanı | PostgreSQL, `vehicle_management` şeması; bağlantı dizesi `VehicleManagement` (yoksa `Default`) |
-| Ek paket | `Byd.VehicleManagement.Consumer`: başka modüllerden gelen olayların handler'ları |
+| [Filo yapısı](#filo-yapısı) | Lookup, model, tip, araç ve donanım; her biri doğru scope'ta |
+| [Lookup yönetimi](#lookup-yönetimi) | Ulaşım modu, yakıt, durum gibi sabit listelerin tek tip yönetimi |
+| [GTFS uyumlu araç kimliği](#gtfs-uyumlu-araç-kimliği) | Araç, canlı akıştaki kimliğiyle eşleşir |
+| [Realtime'dan otomatik kayıt](#realtimedan-otomatik-kayıt) | Akışta görülen kayıtsız araç kendiliğinden eklenir |
+| [Araç değişikliği event'i](#araç-değişikliği-eventi) | Araç eklenince, değişince, silinince diğer modüllere haber |
+| [Cache'li araç listesi](#cacheli-araç-listesi) | Realtime eşlemesi her mesajda database'e gitmez |
+| [Liste ve activity log](#liste-ve-activity-log) | Her kaynakta dynamic list query, update ve delete'te activity log |
 
-## Veri modeli
+## Filo yapısı
 
 ```mermaid
-erDiagram
-    VehicleModels ||--o{ VehicleTypes : "VehicleModelId"
-    VehicleTypes ||--o{ Vehicles : "VehicleTypeId"
-    Vehicles ||--o{ VehicleEquipments : "VehicleId"
-    TransportModes ||--o{ VehicleTypes : ""
-    FuelTypes ||--o{ VehicleTypes : ""
-    VehicleStatuses ||--o{ Vehicles : ""
-    RegistrationSources ||--o{ Vehicles : ""
-    WheelchairAccessibles ||--o{ Vehicles : ""
-    EquipmentTypes ||--o{ VehicleEquipments : ""
-    VehicleModels {
-        guid Id PK
-        guid TenantId
-        string Manufacturer
-        string Name
-    }
-    VehicleTypes {
-        guid Id PK
-        guid OrganizationId
-        string Code
-        string Name
-        int SeatingCapacity
-        int StandingCapacity
-        int WheelchairPlaceCapacity
-        int BicycleCapacity
-        bool LowFloor
-        bool HasLiftOrRamp
-        decimal Length
-    }
-    Vehicles {
-        guid Id PK
-        guid OrganizationId
-        string GtfsAgencyId
-        string GtfsVehicleId
-        string Label
-        string RegistrationNumber
-        date InServiceFrom
-        date InServiceUntil
-    }
-    VehicleEquipments {
-        guid Id PK
-        guid VehicleId FK
-        int EquipmentTypeId FK
-        int Units
-    }
+flowchart LR
+    L[Lookup'lar<br/>host: herkes görür] --> T
+    M[Üretici modeli<br/>tenant] --> T[Araç tipi<br/>organization]
+    T --> V[Araç<br/>organization]
+    V --> E[Araç donanımı<br/>organization]
 ```
 
-| Tablo | Kapsam | Ne tutar |
+| Kayıt | Kim görür | Ne tutar |
 |---|---|---|
-| `TransportModes` | Host (lookup) | Ulaşım modu; kodu GTFS `route_type` ile aynıdır |
-| `FuelTypes` | Host (lookup) | Yakıt türü |
-| `VehicleStatuses` | Host (lookup) | Araç durumu |
-| `RegistrationSources` | Host (lookup) | Aracın kaydedildiği kaynak; canlı akıştan gelenler "Realtime" kaynaklıdır |
-| `WheelchairAccessibles` | Host (lookup) | GTFS-RT `wheelchair_accessible` değerleri |
-| `EquipmentTypes` | Host (lookup) | Donanım türü |
-| `VehicleModels` | Tenant | Üretici ve model adı |
-| `VehicleTypes` | Organizasyon | Kapasite, alçak taban, rampa, uzunluk; mod ve yakıt türü |
-| `Vehicles` | Organizasyon | Araçlar |
-| `VehicleEquipments` | Organizasyon | Aracın donanımları ve adetleri |
+| Lookup'lar | Herkes | Ulaşım modu, yakıt türü, araç durumu, erişilebilirlik, donanım türü, kayıt kaynağı |
+| Üretici modeli | Tenant'taki herkes | Üretici ve model adı |
+| Araç tipi | Kendi organization'ı | Kapasite (oturan, ayakta, tekerlekli sandalye, bisiklet), alçak taban, rampa, uzunluk |
+| Araç | Kendi organization'ı | GTFS kimliği, etiket, plaka, hizmet aralığı |
+| Araç donanımı | Kendi organization'ı | Aracın donanımları ve adetleri |
 
-Lookup'ların varsayılan satırları host açılışında seed edilir.
+Organization scope'u token'dan gelir; organization seçmeden araç yazılamaz.
 
-## Özellikler
+## Lookup yönetimi
 
-### 1. Lookup yönetimi
+Altı lookup tek bir base controller'dan aynı endpoint setini alır: create, get, list, update, delete. Her satır `Id`,
+`Code` ve `Name` taşır; kod unique'tir. Ulaşım modunun kodu GTFS `route_type` ile aynıdır. Default satırlar host
+açılışında seed edilir.
 
-Altı lookup tek bir taban controller'dan aynı uç kümesini alır: ekleme, tekil okuma, liste, güncelleme ve silme. Lookup
-satırı `Id`, `Code` ve `Name` taşır; kod tekildir.
+## GTFS uyumlu araç kimliği
 
-### 2. Kapsam katmanları
+Araç organization içinde işletmeci (`GtfsAgencyId`) ve GTFS-RT `vehicle.id` (`GtfsVehicleId`) ile tanınır. Canlı akış
+aracı bu kimlikle bildirir, modül de aynı kimlikle eşler. Plaka unique sayılmaz, kaynaktaki haliyle tutulur.
 
-| Kayıt | Kim görür |
-|---|---|
-| Lookup'lar | Herkes (host kapsamı) |
-| Üretici modeli | Tenant'taki herkes |
-| Araç tipi, araç, donanım | Yalnız kendi organizasyonu |
+## Realtime'dan otomatik kayıt
 
-Organizasyon kapsamı token'dan gelir; organizasyonsuz bir istek araç yazamaz.
-
-### 3. GTFS uyumlu araç kimliği
-
-Aracın kimliği organizasyonda işletmeci (`GtfsAgencyId`) ile birlikte GTFS-RT `vehicle.id` değeridir (`GtfsVehicleId`).
-Plaka tekil sayılmaz, kaynaktaki haliyle tutulur. Aracın hizmet aralığı `InServiceFrom` ve `InServiceUntil` ile tutulur.
-
-### 4. Realtime'dan otomatik kayıt
-
-Canlı akışta görülen ama kayıtlı olmayan araç iki yoldan eklenebilir:
-
-| Yol | Nasıl |
-|---|---|
-| Olay | Realtime modülü `VehicleRegistrationRequestedEto` yayınlar; `Byd.VehicleManagement.Consumer` paketindeki handler aracı olayın kapsamında kaydeder |
-| Süreç içi çağrı | `IVehicleAppService.FindOrRegisterRealtimeAsync` (HTTP'ye açılmaz) |
+Realtime modülü akışta kayıtsız bir araç görürse `VehicleRegistrationRequestedEto` yayınlar. Vehicle modülünün handler'ı
+aracı organization'ın listesinde arar; yoksa "Realtime" kaynaklı olarak ekler.
 
 ```mermaid
 sequenceDiagram
     participant RT as Realtime modülü
     participant MQ as RabbitMQ
-    participant H as Consumer handler'ı
-    participant DB as Vehicles
+    participant H as Vehicle handler
     RT->>MQ: VehicleRegistrationRequestedEto (GtfsVehicleId, RouteType, ...)
-    MQ->>H: Olay alınır
-    H->>DB: Organizasyonun araç listesinde ara
-    alt kayıtlı değil
-        H->>DB: Tipsiz, hizmette, "Realtime" kaynaklı araç ekle
-    else zaten kayıtlı
-        H-->>MQ: Sessizce tamamla
+    MQ->>H: Event alınır
+    alt Kayıtlı değil
+        H->>H: "Realtime" kaynaklı araç eklenir
+    else Zaten kayıtlı
+        H-->>MQ: Sessizce tamamlanır
     end
 ```
 
-Girdi GTFS standardının değerleriyle gelir: `RouteType` (temel ya da genişletilmiş `route_type`), `wheelchair_accessible`,
-`GtfsAgencyId`, `GtfsVehicleId`, `Label` ve `RegistrationNumber`. Aynı olayın tekrar teslimi ikinci bir araç yazmaz.
+Aynı event'in tekrar gelmesi ikinci bir araç yazmaz. Handler'lar ayrı `Byd.VehicleManagement.Consumer` paketindedir;
+modülü NuGet'ten alan bir host onları istemeden almaz.
 
-### 5. Önbellekli araç listesi
+## Araç değişikliği event'i
 
-Organizasyonun araç listesi önbellekte tutulur ve araç satırı değiştiğinde silinir. Realtime eşlemesi her mesajda
-veritabanına gitmez.
+Araç eklendiğinde, güncellendiğinde ya da silindiğinde `VehicleEto` distributed event olarak yayınlanır. Realtime modülü
+akıştaki GTFS-RT kimliğini araç kaydına bu event'le eşler.
 
-### 6. Araç değişikliği olayı
+## Cache'li araç listesi
 
-Araç eklendiğinde, güncellendiğinde ya da silindiğinde ABP entity olayı `VehicleEto` ile dağıtık olarak yayınlanır.
-Diğer modüller akıştaki GTFS-RT kimliğini araç kaydına bu olayla eşler.
+Organization'ın araç listesi cache'te tutulur ve araç değişince temizlenir. Realtime akışı saniyeler içinde yüzlerce araç
+bildirse de eşleme database'e gitmez.
 
-## HTTP uçları
+## Liste ve activity log
 
-Her kaynak aynı uç kümesini taşır:
+Her kaynağın aynı endpoint seti vardır: create, get, `filtered-list`, update, delete. Liste core'un dynamic list query'sini
+kullanır. Update ve delete işlemleri activity log'a düşer.
 
-| Yöntem | Yol | Ne yapar |
-|---|---|---|
-| `POST` | `{kaynak}` | Ekler |
-| `GET` | `{kaynak}/{id}` | Tek kayıt |
-| `GET` | `{kaynak}/filtered-list` | Filtreli, sıralı, sayfalı liste |
-| `PUT` | `{kaynak}/{id}` | Günceller |
-| `DELETE` | `{kaynak}/{id}` | Siler |
-
-| Kaynak | Kök yol |
+| Kaynak | Endpoint |
 |---|---|
 | Araçlar | `api/vehicle-management/vehicles` |
 | Araç tipleri | `api/vehicle-management/vehicle-types` |
 | Üretici modelleri | `api/vehicle-management/vehicle-models` |
 | Araç donanımları | `api/vehicle-management/vehicle-equipments` |
-| Lookup'lar | `api/vehicle-management/lookups/{transport-modes, fuel-types, vehicle-statuses, wheelchair-accessibles, equipment-types, registration-sources}` (liste için `GET` kökü, kimlik `int`) |
+| Lookup'lar | `api/vehicle-management/lookups/{transport-modes, fuel-types, ...}` |
 
-## Olaylar
+Her kaynağın `View` ve `Manage` permission'ı vardır (`VehicleManagement.Vehicles.View` gibi).
 
-| Olay | Ad | Yön | Ne zaman |
-|---|---|---|---|
-| `VehicleEto` | `VehicleManagement.Vehicle` | Bu modül yayınlar | Araç eklenince, güncellenince, silinince; `Id`, `TenantId`, `OrganizationId`, `GtfsAgencyId`, `GtfsVehicleId` |
-| `VehicleRegistrationRequestedEto` | `VehicleManagement.Vehicles.RegistrationRequested` | Bu modül dinler | Realtime akışında kayıtsız araç görülünce |
+## Modülde kullanım
 
-## Yetkiler
-
-| İzin | Ne verir |
-|---|---|
-| `VehicleManagement.Lookups.View` / `.Manage` | Lookup'ları görmek / yönetmek |
-| `VehicleManagement.VehicleModels.View` / `.Manage` | Üretici modelleri |
-| `VehicleManagement.VehicleTypes.View` / `.Manage` | Araç tipleri |
-| `VehicleManagement.Vehicles.View` / `.Manage` | Araçlar |
-| `VehicleManagement.VehicleEquipments.View` / `.Manage` | Araç donanımları |
-
-## Hata kodları
-
-| Aile | Kapsadığı durumlar |
-|---|---|
-| `VehicleExceptionCodes` | Kapsam yok, mod/durum zorunlu, GTFS kimliği eksik/uzun, hizmet bitişi başlangıçtan önce, tip/durum bulunamadı |
-| `VehicleTypeExceptionCodes` | Kod/ad eksik ya da uzun, mod/yakıt zorunlu, geçersiz kapasite ve uzunluk |
-| `VehicleModelExceptionCodes` | Tenant zorunlu, üretici/ad eksik ya da uzun |
-| `VehicleEquipmentExceptionCodes` | Araç/donanım türü zorunlu ya da bulunamadı, geçersiz adet |
-| `VehicleLookupExceptionCodes` | Ad zorunlu, kod geçersiz ya da tekrarlı |
-
-Kodlar `VehicleManagement:` önekiyle gelir.
-
-## Bir modülde kullanmak
-
-| Tüketen katman | Paket | Modül sınıfı |
-|---|---|---|
-| `<Modül>.Domain.Shared` | `Byd.VehicleManagement.Domain.Shared` | `VehicleManagementDomainSharedModule` |
-| `<Modül>.Domain` | `Byd.VehicleManagement.Domain` | `VehicleManagementDomainModule` |
-| `<Modül>.Application.Contracts` | `Byd.VehicleManagement.Application.Contracts` | `VehicleManagementApplicationContractsModule` |
-| `<Modül>.Application` | `Byd.VehicleManagement.Application` | `VehicleManagementApplicationModule` |
-| `<Modül>.EntityFrameworkCore` | `Byd.VehicleManagement.EntityFrameworkCore` | `VehicleManagementEntityFrameworkCoreModule` |
-| `<Modül>.HttpApi` | `Byd.VehicleManagement.HttpApi` | `VehicleManagementHttpApiModule` |
-| Olayları işleyecek host | `Byd.VehicleManagement.Consumer` | `VehicleManagementConsumerModule` |
-
-Handler'lar ayrı pakettedir; modülü NuGet olarak alan bir host onları istemeden almaz. Yalnız olay sözleşmesi gereken bir
-modüle `Domain.Shared` yeter.
-
-**Host**
-
-| Gereken | Neden |
-|---|---|
-| Core, log ve auth host sözleşmesi | Zincirin bütün modülleri |
-| `ConnectionStrings:VehicleManagement` | Yoksa `Default` kullanılır |
-| `RabbitMQ` bölümü | Realtime ile olay alışverişi |
-
-Migration'lar `Byd.VehicleManagement.EntityFrameworkCore` paketindedir.
+Başka bir modül vehicle'ın event'lerini kullanacaksa `Byd.VehicleManagement.Domain.Shared` paketi yeter. Event'leri
+işleyecek host `Byd.VehicleManagement.Consumer` paketini ekler. Host config'i: `ConnectionStrings:VehicleManagement`
+(yoksa `Default`) ve RabbitMQ.
 
 ## Geliştirme
 
@@ -247,5 +113,3 @@ Migration'lar `Byd.VehicleManagement.EntityFrameworkCore` paketindedir.
 dotnet build Byd.VehicleManagement.slnx
 dotnet test Byd.VehicleManagement.slnx
 ```
-
-Host `host/Byd.VehicleManagement.HttpApi.Host` altındadır; repo kökünde bir `Dockerfile` vardır.
